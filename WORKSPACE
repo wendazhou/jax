@@ -33,17 +33,10 @@ http_archive(
 #    and update the sha256 with the result.
 http_archive(
     name = "org_tensorflow",
-<<<<<<< HEAD
-    sha256 = "461df411fccc278244edc32496e2d846fcb96ab019ea352c51476b6edcbdcc5b",
-    strip_prefix = "tensorflow-9f4fc034f686d9a484f5613a7d840a4bbcfe0e27",
-    urls = [
-        "https://github.com/tensorflow/tensorflow/archive/9f4fc034f686d9a484f5613a7d840a4bbcfe0e27.tar.gz",
-=======
     sha256 = "4bed9e574452ef105925f73ae10f9c4b8c6195200058849bcc48492a340fc539",
     strip_prefix = "tensorflow-964f73e3c31675bd64d0019cb7f8942a64fb7279",
     urls = [
         "https://github.com/wendazhou/tensorflow/archive/964f73e3c31675bd64d0019cb7f8942a64fb7279.tar.gz",
->>>>>>> make jax build on windows
     ],
 )
 

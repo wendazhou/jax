@@ -1,0 +1,25 @@
+trigger:
+- windows
+
+jobs:
+- job: build
+  timeoutInMinutes: 0
+  pool:
+    vmImage: 'windows-2019'
+
+  steps:
+  - task: UsePythonVersion@0
+    inputs:
+      versionSpec: '3.6'
+  - script: python -m pip install --upgrade numpy
+    displayName: "Install Numpy"
+  - script: choco install bazel --version 0.28 --no-progress
+    displayName: "Install bazel"
+  - task: CacheBeta@0
+    inputs:
+      key:
+        $(Agent.OS)
+      path: $(Pipeline.Workspace)/bazel_cache/
+    displayName: Bazel build cache
+  - script: python build/build.py --bazel_options="--disk_cache=$(Pipeline.Workspace)/bazel_cache/"
+    displayName: Build Jax
