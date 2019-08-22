@@ -15,7 +15,7 @@
 # JAX is Autograd and XLA
 
 load("@org_tensorflow//tensorflow/core/platform:default/build_config.bzl", "pyx_library")
-load("@org_tensorflow//tensorflow:tensorflow.bzl", "pybind_extension")
+load("@org_tensorflow//tensorflow:tensorflow.bzl", "pybind_extension", "if_not_windows")
 
 licenses(["notice"])  # Apache 2
 
@@ -38,11 +38,11 @@ py_library(
 pybind_extension(
     name = "pytree",
     srcs = ["pytree.cc"],
-    copts = [
+    copts = if_not_windows([
         "-fexceptions",
         "-fno-strict-aliasing",
         "-Wno-c++98-c++11-compat",
-    ],
+    ]),
     features = ["-use_header_modules"],
     module_name = "pytree",
     deps = [

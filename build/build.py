@@ -55,7 +55,7 @@ def shell(cmd):
 
 def get_python_bin_path(python_bin_path_flag):
   """Returns the path to the Python interpreter to use."""
-  return python_bin_path_flag or sys.executable
+  return (python_bin_path_flag or sys.executable).replace('\\', '/')
 
 
 # Bazel
@@ -168,19 +168,13 @@ build --action_env PYTHON_BIN_PATH="{python_bin_path}"
 build --python_path="{python_bin_path}"
 build --action_env TF_NEED_CUDA="{tf_need_cuda}"
 build --distinct_host_configuration=false
-build --copt=-Wno-sign-compare
 build -c opt
-build:opt --copt=-march=native
-build:opt --host_copt=-march=native
 build:mkl_open_source_only --define=tensorflow_mkldnn_contraction_kernel=1
 
 # Sets the default Apple platform to macOS.
 build --apple_platform_type=macos
 
 # Disable enabled-by-default TensorFlow features that we don't care about.
-build --define=no_aws_support=true
-build --define=no_gcp_support=true
-build --define=no_hdfs_support=true
 build --define=no_kafka_support=true
 build --define=no_ignite_support=true
 build --define=grpc_no_ares=true
@@ -190,13 +184,42 @@ build:cuda --define=using_cuda=true --define=using_cuda_nvcc=true
 
 build --spawn_strategy=standalone
 build --strategy=Genrule=standalone
+
+--incompatible_depset_is_not_iterable=false
+--incompatible_disable_deprecated_attr_params=false
+--incompatible_new_actions_api=false
+--incompatible_no_support_tools_in_action_inputs=false
+--incompatible_use_python_toolchains=false
 """
 
+BAZELRC_FLAGS_NOWINDOWS = """
+build --copt=-Wno-sign-compare
+build:opt --copt=-march=native
+build:opt --host_copt=-march=native
 
+build --define=no_aws_support=true
+build --define=no_gcp_support=true
+build --define=no_hdfs_support=true
+"""
+
+BAZELRC_FLAGS_WINDOWS = """
+build --copt=/arch:AVX2
+build --host_copt=/arch:AVX2
+build --copt="/std:c++latest"
+build --copt="/permissive-"
+build --copt=-DWIN32_LEAN_AND_MEAN --host_copt=-DWIN32_LEAN_AND_MEAN --copt=-DNOGDI --host_copt=-DNOGDI
+build --define=override_eigen_strong_inline=true
+"""
 
 def write_bazelrc(cuda_toolkit_path=None, cudnn_install_path=None, **kwargs):
   f = open("../.bazelrc", "w")
   f.write(BAZELRC_TEMPLATE.format(**kwargs))
+
+  if platform.system() == "Windows":
+    f.write(BAZELRC_FLAGS_WINDOWS)
+  else:
+    f.write(BAZELRC_FLAGS_NOWINDOWS)
+
   if cuda_toolkit_path:
     f.write("build --action_env CUDA_TOOLKIT_PATH=\"{cuda_toolkit_path}\"\n"
             .format(cuda_toolkit_path=cuda_toolkit_path))
